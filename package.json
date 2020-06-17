@@ -1,17 +1,18 @@
 {
-  "name": "template-cf-mdb-njs",
+  "name": "tmp-node-odata4",
   "version": "1.0.0",
-  "description": "Template mongodb CF",
+  "description": "Template mongodb odata4 CF",
   "homepage": "",
   "author": "Vladimir Rodriguez",
   "engines": {
     "node": "12.16.1"
   },
   "dependencies": {
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.19.0",
     "cfenv": "^1.2.2",
     "express": "^4.17.1",
-    "mongoose": "^5.9.18",
+    "mongoose": "^5.9.19",
+    "odata-v4-server": "^0.2.13",
     "path": "^0.12.7"
   }
 }

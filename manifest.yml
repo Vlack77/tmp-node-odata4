@@ -1,11 +1,11 @@
 ---
 applications:
-- name: template-cf-mbd-njs
+- name: tmp-node-odata4
   buildpack: nodejs_buildpack
   command: node app.js
   memory: 128M
   disk_quota: 512M
-  host: template-cf-mbd-njs
+  host: tmp-node-odata4
   services:
   - mongodb
 

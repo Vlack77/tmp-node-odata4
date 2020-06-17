@@ -3,79 +3,59 @@
 module.exports = function (oApp) {
 
     let User = require('../../db/models/user.js');
+    var createQuery = require('odata-v4-mongodb').createQuery;
 
-    oApp.get('/api/user', function (req, res) {
-        User.find(function (err, users) {
-            if (err) {
-                return res.status(500).send('Error occurred: database error');
-            }
-
-            res.json(users.map(function (user) {
-                return {
-                    id: user.id,
-                    user_name: user.user_name,
-                    last_name: user.last_name,
-                    first_name: user.first_name
-                };
-            }));
-        });
+    // service document
+    oApp.get('/odata', function (req, res, next) {
+        res.set('OData-Version', '4.0')
+        res.json({
+            '@odata.context': req.protocol + '://' + req.get('host') + '/odata/$metadata',
+            value: [
+                {
+                    name: 'Users',
+                    kind: 'EntitySet',
+                    url: 'Users'
+                }
+            ]
+        })
     });
 
-    oApp.get('/api/user/:id', function (req, res) {
-        User.findOne({ id: req.params.id }, function (err, user) {
-            if (err || user === null) {
-                return res.status(500).send('Error occurred: database error');
+    oApp.post('/odata/Users', jsonParser, function (req, res, next) {
+        var entity = new User(req.body);
+        entity.save().then(function (result) {
+            if (req.headers.prefer && req.headers.prefer.indexOf('return=minimal') < 0) {
+                res.status(201);
+                res.json(result);
+            } else {
+                res.status(204);
+                res.end();
             }
+        }, next);
+    });
+
+    oApp.get('/odata/Users', function (req, res, next) {
+        var find = {
+            query: {},
+            fields: {},
+            options: {}
+        };
+        var qs = url.parse(req.url).query;
+        if (qs) {
+            var query = createQuery(qs);
+            find.query = query.query;
+            find.fields = query.projection;
+            find.options.sort = query.sort;
+            find.options.skip = query.skip;
+            find.options.limit = query.limit;
+        }
+
+        User.find(find.query, find.fields, find.options, function (err, data) {
+            if (err) return next(err);
 
             res.json({
-                id: user.id,
-                user_name: user.user_name,
-                last_name: user.last_name,
-                first_name: user.first_name
+                '@odata.context': req.protocol + '://' + req.get('host') + '/odata/$metadata#users',
+                value: data
             });
         });
     });
-
-    oApp.post('/api/user', function (req, res) {
-        new User({
-            id: req.body.id,
-            user_name: req.body.user_name,
-            last_name: req.body.last_name,
-            first_name: req.body.first_name
-        }).save(function (err, user) {
-            if (err) {
-                return res.status(500).send('Error occurred: database error');
-            }
-            res.json({
-                id: user.id
-            });
-        });
-
-    });
-
-    oApp.delete('/api/user/:id', function (req, res) {
-        User.remove({ id: req.params.id }, function (err) {
-            if (err) {
-                return res.status(500).send('Error occurred: database error');
-            }
-
-            return res.send();
-        });
-    });
-
-    oApp.put('/api/user/:id', function(req,res){
-        User.update({ 
-            id: req.params.id
-        }, {
-            user_name: req.body.user_name,
-            last_name: req.body.last_name,
-            first_name: req.body.first_name  
-        }, function(err){
-            if(err){
-                return res.status(500).send('Error occurred: database error');
-            }
-            res.send();
-        }); 
-    });
-
 };
