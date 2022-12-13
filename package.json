@@ -10,7 +10,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "cfenv": "^1.2.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "mongoose": "^5.9.19",
     "odata-v4-server": "^0.2.13",
     "path": "^0.12.7"
